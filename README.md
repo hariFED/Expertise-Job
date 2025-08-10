@@ -53,12 +53,12 @@ Create a \`.env.local\` file in the root directory:
 DATABASE_URL="postgresql://username:password@localhost:5432/expertisor_jobs"
 
 # Redis Cloud
-REDIS_HOST="redis-13936.c212.ap-south-1-1.ec2.redns.redis-cloud.com"
-REDIS_PORT="13936"
-REDIS_PASSWORD="ldD0bkr4xEgQj7e9XAlciszLOmLaPJ9M"
-REDIS_USERNAME="default"
+REDIS_HOST=""
+REDIS_PORT=""
+REDIS_PASSWORD=""
+REDIS_USERNAME=""
 # Alternative: Use REDIS_URL for connection string format
-# REDIS_URL="redis://default:ldD0bkr4xEgQj7e9XAlciszLOmLaPJ9M@redis-13936.c212.ap-south-1-1.ec2.redns.redis-cloud.com:13936"
+# REDIS_URL=""
 
 # JWT Secrets
 JWT_SECRET="your-jwt-secret-key"
