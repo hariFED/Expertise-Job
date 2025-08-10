@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  COMPANY
+  ADMIN
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+}
+
+enum LocationType {
+  REMOTE
+  ONSITE
+  HYBRID
+}
+
+enum JobStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  PAUSED
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWED
+  ACCEPTED
+  REJECTED
+}
+
+enum ExperienceLevel {
+  ENTRY
+  MID
+  SENIOR
+  LEAD
+  EXECUTIVE
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String?
+  name      String
+  role      UserRole @default(USER)
+  avatar    String?
+  location  String?
+  headline  String?
+  bio       String?
+  skills    String[] // Array of skill tags
+  resume    String? // File URL
+  portfolio String[] // Array of portfolio URLs
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // OAuth
+  googleId String? @unique
+
+  // Relations
+  applications Application[]
+  savedJobs    SavedJob[]
+  company      Company?
+  sessions     Session[]
+
+  @@map("users")
+}
+
+model Company {
+  id          String  @id @default(cuid())
+  name        String
+  email       String  @unique
+  website     String?
+  logo        String?
+  description String?
+  location    String?
+  size        String? // e.g., "1-10", "11-50", etc.
+  verified    Boolean @default(false)
+
+  // Contact person
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobs   Job[]
+
+  @@map("companies")
+}
+
+model Job {
+  id               String          @id @default(cuid())
+  title            String
+  description      String
+  responsibilities String[]
+  qualifications   String[]
+  location         String?
+  locationType     LocationType    @default(REMOTE)
+  jobType          JobType
+  salaryMin        Int?
+  salaryMax        Int?
+  currency         String          @default("USD")
+  skills           String[] // Array of required skills
+  experienceLevel  ExperienceLevel @default(MID)
+  applicationUrl   String? // External application URL
+  applicationEmail String? // Application email
+  questions        String[] // Custom application questions
+  status           JobStatus       @default(DRAFT)
+  featured         Boolean         @default(false)
+  views            Int             @default(0)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  expiresAt        DateTime?
+
+  // Search vector for full-text search
+  searchVector String? // tsvector equivalent
+
+  // Relations
+  companyId    String
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  applications Application[]
+  savedJobs    SavedJob[]
+
+  @@index([status, createdAt])
+  @@index([jobType, locationType])
+  @@index([companyId])
+  @@map("jobs")
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  status      ApplicationStatus @default(PENDING)
+  coverLetter String?
+  answers     String[] // Answers to custom questions
+  appliedAt   DateTime          @default(now())
+  reviewedAt  DateTime?
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId  String
+  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@map("applications")
+}
+
+model SavedJob {
+  id      String   @id @default(cuid())
+  savedAt DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId  String
+  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@map("saved_jobs")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
