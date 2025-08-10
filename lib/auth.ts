@@ -1,7 +1,7 @@
-import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
 import { prisma } from "./prisma"
-import type { User } from "../generated/prisma"
+import type { User } from "@prisma/client"
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "your-refresh-secret-key"
